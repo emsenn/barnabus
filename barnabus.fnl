@@ -4,14 +4,19 @@
 ;; external dependencies
 (local lustache (require "lustache"))
 
+
 ;; internal data structures
 (local shop {})
+(tset shop :fortunes {})
 (tset shop :logs {})
 (tset shop :projects {})
 
+
 ;; processing of external data
-(global log (fn [entry] (table.insert (. shop :logs) entry)))
-(global project (fn [entry] (table.insert (. shop :projects) entry)))
+(fn stock [shelf entry] (table.insert (. shop shelf) entry))
+(global fortune (fn [entry] (stock :fortunes entry)))
+(global log (fn [entry] (stock :logs entry)))
+(global project (fn [entry] (stock :projects entry)))
 
 (fn process-file [filename]
  (print (.. "Loading " filename))
@@ -19,6 +24,7 @@
 
 (global make-shop
   (fn []
+    (process-file "data/fortunes.lua")
     (process-file "data/logs.lua")
     (process-file "data/projects.lua")
     shop))
@@ -31,8 +37,9 @@
       (with-open [fin (io.open :style.css)] (fin:read "*all"))
       "</style></head>"))
 (fn render-html-header []
-  (.. "<h1>emsenn's website</h1>"
-      "<span>A temporary presentation of archived works.</span>"))
+  (.. "<h1>emsenn's webpage</h1>"
+      "<span>A big HTML document about emsenn and a lot of eir writing and "
+      "projects.</span>"))
 
 (fn render-html-closing []
   "</html>")
@@ -91,6 +98,12 @@
       "<li><a href=\"#logs\">Logs</a></li>"
       "<li><a href=\"#projects\">Projects</a></li>"
       "</ul></nav>"))
+(fn render-html-fortunes []
+  (var R "<span class=\"fortunes\">")
+  (each [key val (pairs (. shop :fortunes))]
+    (set R (.. R (. val :text))))
+  (set R (.. R "</span>"))
+  R)
 
 (fn R []
   (var r "")
@@ -117,6 +130,7 @@
       (R! (render-html-log-entry val)))
     (R! (render-html-main-closing))
     (R! (render-html-article-closing))
+    (R! (render-html-fortunes))
     (R! (render-html-body-closing))
     (R! (render-html-closing))
     (R!)))
