@@ -7,9 +7,11 @@
 ;; internal data structures
 (local shop {})
 (tset shop :logs {})
+(tset shop :projects {})
 
 ;; processing of external data
 (global log (fn [entry] (table.insert (. shop :logs) entry)))
+(global project (fn [entry] (table.insert (. shop :projects) entry)))
 
 (fn process-file [filename]
  (print (.. "Loading " filename))
@@ -18,6 +20,7 @@
 (global make-shop
   (fn []
     (process-file "data/logs.lua")
+    (process-file "data/projects.lua")
     shop))
 
 (fn render-html-opening []
@@ -61,7 +64,24 @@
   (var R "<ul id=\"logs\">")
   (each [key val (pairs (. shop :logs))]
     (set R
-      (.. R (lustache:render "<li><a href=\"#log-{{ date }}\">#{{ date }}</a></li>"
+      (.. R (lustache:render "<li><a href=\"#log-{{ date }}\">{{ date }}</a></li>"
+                             val))))
+  (set R (.. R "</ul>"))
+  R)
+
+(fn render-html-project-entry [entry]
+  (lustache:render
+    (.. "<section class=\"log\" id=\"{{ id }}\">"
+        "<span class=\"log-summary\">{{ name }}: {{ status }}</span>"
+        "<section class=\"log-content\">{{ description }}</section>"
+        "</section>")
+    entry))
+
+(fn render-html-project-entry-toc []
+  (var R "<ul id=\"projects\">")
+  (each [key val (pairs (. shop :projects))]
+    (set R
+      (.. R (lustache:render "<li><a href=\"#project-{{ id }}\">{{ name }}</a></li>"
                              val))))
   (set R (.. R "</ul>"))
   R)
@@ -69,6 +89,7 @@
 (fn render-html-page-summary []
   (.. "<nav><ul>"
       "<li><a href=\"#logs\">Logs</a></li>"
+      "<li><a href=\"#projects\">Projects</a></li>"
       "</ul></nav>"))
 
 (fn R []
@@ -88,6 +109,9 @@
     (R! (render-html-header))
     (R! (render-html-main-opening))
     (R! (render-html-page-summary))
+    (R! (render-html-project-entry-toc))
+    (each [key val (pairs (. shop :projects))]
+      (R! (render-html-project-entry val)))
     (R! (render-html-log-entry-toc))
     (each [key val (pairs (. shop :logs))]
       (R! (render-html-log-entry val)))
