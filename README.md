@@ -1,6 +1,7 @@
 # Barnabus
 *emsenn's website generator*
-***Lua tables -> (Barnabus + Mustache) -> HTML***
+
+**Lua tables -> *(Barnabus + Mustache)* -> HTML**
 
 ***Barnabus*** is a hack to present Lua data as an HTML document.
 It's implemented in [Fennel][fennel].

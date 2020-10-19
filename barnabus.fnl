@@ -17,7 +17,7 @@
 
 (global make-shop
   (fn []
-    (process-file "logs.lua")
+    (process-file "data/logs.lua")
     shop))
 
 (fn render-html-opening []
